@@ -17,7 +17,14 @@ $b3 = [
     [1, 0, 2, 0],
     [1, 0, 2, 0],
 ]
-
+$b4 = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
+  [0, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, ],
+  [0, 2, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, ],
+]
 
 def get_move(board, me)
   him = (me == 1) ? 2 : 1
@@ -25,11 +32,11 @@ def get_move(board, me)
   height = board.length
   width = board[0].length
   choices = valid_moves(board)
-  # choices.sample
 
   choices.each do |cc|
-    new_board = simulate_move(board, cc, me)
-    if winner(new_board) == me or winner(new_board) == him
+    board_if_i_play = simulate_move(board, cc, me)
+    board_if_he_plays = simulate_move(board, cc, him)
+    if winner(board_if_i_play) == me or winner(board_if_he_plays) == him
       return cc
     end
   end
