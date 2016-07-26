@@ -1,54 +1,3 @@
-$arr = [[1,2,3], [4,5,6]]
-$b0 = [[0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0]]
-$b1 = [
-    [0, 0, 0, 0, 0, 2],
-    [1, 0, 0, 2, 0, 1],
-    [2, 0, 1, 1, 0, 1],
-    [1, 1, 2, 2, 0, 1],
-]
-$b2 = [
-    [0, 0, 0, 0],
-    [1, 0, 2, 0],
-    [1, 0, 2, 0],
-    [1, 0, 2, 0],
-]
-$b3 = [
-    [1, 0, 0, 0],
-    [1, 0, 2, 0],
-    [1, 0, 2, 0],
-    [1, 0, 2, 0],
-]
-$b4 = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ],
-  [0, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, ],
-  [0, 2, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, ],
-]
-$b5 = [
-  [0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, ],
-  [0, 0, 0, 0, 0, ],
-  [2, 2, 0, 2, 2, ],
-  [2, 1, 0, 1, 2, ],
-]
-$b6 = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, ],
-  [2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 1, ],
-  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 2, ],
-  [1, 1, 1, 2, 0, 1, 2, 1, 1, 1, 2, 2, ],
-  [1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, ],
-]
-
 def get_move(board, me)
   him = (me == 1) ? 2 : 1
 
@@ -56,15 +5,21 @@ def get_move(board, me)
   width = board[0].length
   choices = valid_moves(board)
 
-  ### 1. Win or block
+  ### 1. Win
   choices.each do |cc|
-    board_1 = simulate_move(board, cc, me)
-    board_2 = simulate_move(board, cc, him)
-    if winner(board_1) == me or winner(board_2) == him
+    if winner(simulate_move(board, cc, me)) == me
       return cc
     end
   end
-  ### 2. Don't play a move that lets him win
+
+  ### 2. Block
+  choices.each do |cc|
+    if winner(simulate_move(board, cc, him)) == him
+      return cc
+    end
+  end
+
+  ### 3. Don't play a move that lets him win
   new_choices = []
   choices.each do |cc|
     board_1 = simulate_move(board, cc, me)
@@ -77,7 +32,15 @@ def get_move(board, me)
     end
   end
 
-  ### 3. ~rando~
+  ### 4. Choose from least full columns
+  groups = new_choices.group_by do |cc|
+    col = (board.transpose)[cc]
+    col.count(0)
+  end
+
+  new_choices = groups[groups.keys.max]
+
+  ### 5. ~rando~
   new_choices.sample
 end
 
