@@ -65,17 +65,20 @@ def get_move(board, me)
     end
   end
   ### 2. Don't play a move that lets him win
-  choices.reject! do |cc|
+  new_choices = []
+  choices.each do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
     if board_12.nil?
-      false # don't delete this choice
+      next # simulation failed
     end
-    winner(board_12) == him
+    if winner(board_12) != him
+      new_choices << cc
+    end
   end
 
-  # else, rando
-  choices.sample
+  ### 3. ~rando~
+  new_choices.sample
 end
 
 def winner(board)
