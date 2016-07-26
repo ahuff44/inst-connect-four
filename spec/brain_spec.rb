@@ -80,142 +80,159 @@ describe "brain" do
     # ahuff_assert("$b6 2", get_move($b6, 2), 4)
   end
 
-  it "wins" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [1, 1, 1, 0],
-    ]
-    expect(get_move(board, 1)).to be 3
-    board = [
-      [0, 0, 0, 0],
-      [1, 0, 0, 0],
-      [1, 0, 0, 0],
-      [1, 0, 0, 0],
-    ]
-    expect(get_move(board, 1)).to be 0
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 1, 2],
-      [0, 1, 2, 1],
-      [1, 2, 2, 2],
-    ]
-    expect(get_move(board, 1)).to be 3
+  describe "basic logic" do
+    it "wins" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 1, 0],
+      ]
+      expect(get_move(board, 1)).to be 3
+      board = [
+        [0, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 0
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 1, 2],
+        [0, 1, 2, 1],
+        [1, 2, 2, 2],
+      ]
+      expect(get_move(board, 1)).to be 3
+    end
+
+    it "wins before blocking" do
+      board = [
+        [0, 0, 0, 0],
+        [1, 0, 2, 0],
+        [1, 0, 2, 0],
+        [1, 0, 2, 0],
+      ]
+      expect(get_move(board, 1)).to be 0
+      expect(get_move(board, 2)).to be 2
+    end
+
+    it "blocks" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 1, 0],
+      ]
+      expect(get_move(board, 2)).to be 3
+      board = [
+        [0, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+      ]
+      expect(get_move(board, 2)).to be 0
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 1, 2],
+        [0, 1, 2, 1],
+        [1, 2, 2, 2],
+      ]
+      expect(get_move(board, 2)).to be 3
+    end
+
+    it "doesn't create an easy win for the opponent" do
+      board = [
+        [0, 0, 2, 0],
+        [0, 2, 1, 0],
+        [2, 1, 1, 2],
+        [1, 1, 2, 2],
+      ]
+      expect(get_move(board, 2)).to_not be 3
+    end
+
+    it "blocks 3-in-a-row" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+      ]
+      expect(get_move(board, 2)).to be 1
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 0, 0],
+      ]
+      expect(get_move(board, 2)).to be 2
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 2, 0],
+        [1, 2, 1, 0],
+      ]
+      expect(get_move(board, 2)).to be 2
+    end
+
+    it "creates 3-in-a-row" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 1
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 2
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 2, 0],
+        [1, 2, 1, 0],
+      ]
+      expect(get_move(board, 1)).to be 2
+    end
+
+    it "blocks 3 before creating 3" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [2, 1, 0, 0],
+        [2, 1, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 0
+      expect(get_move(board, 2)).to be 1
+    end
+
+    it "plays in lowest position" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [2, 0, 1, 2],
+      ]
+      expect(get_move(board, 1)).to be 1
+      expect(get_move(board, 2)).to be 1
+    end
   end
 
-  it "wins before blocking" do
+  it "jamesw example" do
     board = [
-      [0, 0, 0, 0],
-      [1, 0, 2, 0],
-      [1, 0, 2, 0],
-      [1, 0, 2, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 1, 0],
+      [0, 0, 0, 1, 0, 2, 0],
+      [0, 0, 0, 2, 2, 2, 1],
+      [0, 2, 0, 2, 1, 1, 1],
     ]
-    expect(get_move(board, 1)).to be 0
-    expect(get_move(board, 2)).to be 2
-  end
-
-  it "blocks" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [1, 1, 1, 0],
-    ]
-    expect(get_move(board, 2)).to be 3
-    board = [
-      [0, 0, 0, 0],
-      [1, 0, 0, 0],
-      [1, 0, 0, 0],
-      [1, 0, 0, 0],
-    ]
-    expect(get_move(board, 2)).to be 0
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 1, 2],
-      [0, 1, 2, 1],
-      [1, 2, 2, 2],
-    ]
-    expect(get_move(board, 2)).to be 3
-  end
-
-  it "doesn't create an easy win for the opponent" do
-    board = [
-      [0, 0, 2, 0],
-      [0, 2, 1, 0],
-      [2, 1, 1, 2],
-      [1, 1, 2, 2],
-    ]
-    expect(get_move(board, 2)).to_not be 3
-  end
-
-  it "blocks 3-in-a-row" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 1, 0, 0],
-    ]
-    expect(get_move(board, 2)).to be 1
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [1, 1, 0, 0],
-    ]
-    expect(get_move(board, 2)).to be 2
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 1, 2, 0],
-      [1, 2, 1, 0],
-    ]
-    expect(get_move(board, 2)).to be 2
-  end
-
-  it "creates 3-in-a-row" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 1, 0, 0],
-      [0, 1, 0, 0],
-    ]
-    expect(get_move(board, 1)).to be 1
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [1, 1, 0, 0],
-    ]
-    expect(get_move(board, 1)).to be 2
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 1, 2, 0],
-      [1, 2, 1, 0],
-    ]
-    expect(get_move(board, 1)).to be 2
-  end
-
-  it "blocks 3 before creating 3" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [2, 1, 0, 0],
-      [2, 1, 0, 0],
-    ]
-    expect(get_move(board, 1)).to be 0
-    expect(get_move(board, 2)).to be 1
-  end
-
-  it "plays in lowest position" do
-    board = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [2, 0, 1, 2],
-    ]
-    expect(get_move(board, 1)).to be 1
-    expect(get_move(board, 2)).to be 1
+    expect(get_move(board, 1)).to be 0 # 2 would block a 3-in-a-row but would let him win, so choose 0 since it's lowest
   end
 end

@@ -1,3 +1,5 @@
+# require 'byebug'
+
 def get_move(board, me)
   him = (me == 1) ? 2 : 1
 

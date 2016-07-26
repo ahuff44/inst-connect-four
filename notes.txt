@@ -2,3 +2,10 @@ todo:
     rip out ` ### 3. Don't play a move that lets him win ` into a more general game tree walker
     https://zachpendleton.github.io/c4-docs/
     http://connectfour.inseng.net/
+
+    releases (git branches)
+        threes > submitted > stable1 > randobot
+
+threes: xxooox|xxo 5.5/10
+        x
+(o=latest, where it blocks threes but doesn't make them)
