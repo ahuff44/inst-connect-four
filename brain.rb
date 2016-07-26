@@ -1,4 +1,5 @@
 $arr = [[1,2,3], [4,5,6]]
+$b0 = [[0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0], [0,0,0,0,0,0]]
 $b1 = [
     [0, 0, 0, 0, 0, 2],
     [1, 0, 0, 2, 0, 1],
@@ -25,6 +26,28 @@ $b4 = [
   [0, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, ],
   [0, 2, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, ],
 ]
+$b5 = [
+  [0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, ],
+  [0, 0, 0, 0, 0, ],
+  [2, 2, 0, 2, 2, ],
+  [2, 1, 0, 1, 2, ],
+]
+$b6 = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, ],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, ],
+  [2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 1, ],
+  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 2, ],
+  [1, 1, 1, 2, 0, 1, 2, 1, 1, 1, 2, 2, ],
+  [1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, ],
+]
 
 def get_move(board, me)
   him = (me == 1) ? 2 : 1
@@ -33,15 +56,26 @@ def get_move(board, me)
   width = board[0].length
   choices = valid_moves(board)
 
+  ### 1. Win or block
   choices.each do |cc|
-    board_if_i_play = simulate_move(board, cc, me)
-    board_if_he_plays = simulate_move(board, cc, him)
-    if winner(board_if_i_play) == me or winner(board_if_he_plays) == him
+    board_1 = simulate_move(board, cc, me)
+    board_2 = simulate_move(board, cc, him)
+    if winner(board_1) == me or winner(board_2) == him
       return cc
     end
   end
-  # if nothing better, choose randomly
-  return choices.sample
+  ### 2. Don't play a move that lets him win
+  choices.reject! do |cc|
+    board_1 = simulate_move(board, cc, me)
+    board_12 = simulate_move(board_1, cc, him)
+    if board_12.nil?
+      false # don't delete this choice
+    end
+    winner(board_12) == him
+  end
+
+  # else, rando
+  choices.sample
 end
 
 def winner(board)
@@ -69,7 +103,6 @@ def simulate_move(board, cc, player)
   col = (new_board.transpose)[cc]
   index = col.find_index { |e| e != 0 }
   if index == 0
-    raise "IAE"
     nil
   elsif index.nil? # column empty
     index = col.length - 1
