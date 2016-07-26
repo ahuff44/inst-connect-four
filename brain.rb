@@ -20,40 +20,71 @@ def get_move(board, me)
   end
 
   ### 3. Don't play a move that lets him win
-  new_choices = []
-  choices.each do |cc|
+  choices.select! do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
     if board_12.nil?
       next # simulation failed
     end
-    if winner(board_12) != him
-      new_choices << cc
+    winner(board_12) != him
+  end
+
+  ### 4. Block 3-in-a-row...
+  choices.each do |cc|
+    if contiguous_counts(simulate_move(board, cc, him))[him][3] > contiguous_counts(board)[him][3]
+      return cc
     end
   end
 
-  ### 4. Choose from least full columns
-  groups = new_choices.group_by do |cc|
+  ### 5. ... and create 3-in-a-row
+  choices.each do |cc|
+    if contiguous_counts(simulate_move(board, cc, me))[me][3] > contiguous_counts(board)[me][3]
+      return cc
+    end
+  end
+
+  ### 5. else, choose from least full columns...
+  groups = choices.group_by do |cc|
     col = (board.transpose)[cc]
     col.count(0)
   end
 
-  new_choices = groups[groups.keys.max]
+  choices = groups[groups.keys.max]
 
-  ### 5. ~rando~
-  new_choices.sample
+  ### 6. ...and play randomly
+  choices.sample
 end
 
 def winner(board)
   # returns winner. 0 is special.
-  slices(board) do |slice|
-    if slice.uniq.length == 1
-      if slice.uniq[0] != 0 # special
-        return slice.uniq[0]
-      end
-    end
+  counts = contiguous_counts(board)
+  if counts[1][4] > 0
+    return 1
+  elsif counts[2][4] > 0
+    return 2
+  else
+    return 0
   end
-  return 0
+end
+
+def contiguous_counts(board)
+  # returns winner. 0 is special.
+  # hack: only checks for length 3 and 4
+  ["buffer"] + [1, 2].map do |pl|
+    [
+      "buffer",
+      "buffer",
+      "buffer",
+      slices(board, length=3)
+        .select { |s| s[0] == pl }
+        .select { |s| s.uniq.length == 1 }
+        .count,
+       slices(board, length=4)
+        .select { |s| s[0] == pl }
+        .select { |s| s.uniq.length == 1 }
+        .count
+    ]
+  end
 end
 
 def clone_board(board)
@@ -102,20 +133,20 @@ def board_get(board, rr, cc)
   end
 end
 
-def slices(board, &block)
-  _length = 4
+def slices(board, length, &block)
   _dirs = [
     [0, 1], # right
     [1, 1], # down-right
     [1, 0], # down
     [1, -1], # down-left
   ]
+  all_slices = []
   board.each_with_index do |row, rr|
     row.each_with_index do |entry, cc|
       _dirs.each do |dr, dc|
         slice = []
         valid = true
-        (0.._length-1).each do |ii|
+        (0..length-1).each do |ii|
           entry = board_get(board, rr+ii*dr, cc+ii*dc)
           if entry.nil?
             valid = false
@@ -123,9 +154,10 @@ def slices(board, &block)
           slice << entry
         end
         if valid
-          yield slice
+          all_slices << slice
         end
       end
     end
   end
+  all_slices
 end

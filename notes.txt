@@ -1,34 +1,4 @@
-# import requests
-
-# url = "https://ahuff.instructure.com/api/v1/courses/1"
-
-# querystring = {"include[]":"syllabus_body"}
-
-# headers = {
-#     'authorization': "Bearer 17~kwBJjiZNDqQbil6de0IbrMnsvagm9FJcOAKxpIct4DngF4g7fcja5tha3WjZiGkU",
-#     'cache-control': "no-cache",
-#     'postman-token': "0bc150c8-2522-b8b0-451b-b58f1fb6a251"
-#     }
-
-# response = requests.request("GET", url, headers=headers, params=querystring)
-
-# print(response.text)
-
-
-
-
-
-
-deploy process
-    docker build --rm --tag docker.insops.net/ahuff/c4bot:latest .
-    docker push docker.insops.net/ahuff/c4bot:latest
-    # ready to play
-    echo docker.insops.net/ahuff/c4bot:latest | nc connectfour.inseng.net 3000
-    function
-
-randobot
-strat
-    win
-    block
-
-print "hello world"
+todo:
+    rip out ` ### 3. Don't play a move that lets him win ` into a more general game tree walker
+    https://zachpendleton.github.io/c4-docs/
+    http://connectfour.inseng.net/
