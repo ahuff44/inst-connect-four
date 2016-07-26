@@ -1,3 +1,4 @@
-FROM python:2.7-alpine
-COPY ./my_bot.py /bot.py
-CMD python /bot.py
+FROM ruby:2.3-alpine
+COPY ./my_bot.rb /bot.rb
+COPY ./brain.rb /brain.rb
+CMD ruby /bot.rb

@@ -18,15 +18,17 @@
 
 
 
-# deploy process
-#     docker build --rm --tag docker.insops.net/ahuff/c4bot:latest .
-#     docker push docker.insops.net/ahuff/c4bot:latest
 
-#     ready to play; go read docs (echo ... | nc ...)
+deploy process
+    docker build --rm --tag docker.insops.net/ahuff/c4bot:latest .
+    docker push docker.insops.net/ahuff/c4bot:latest
+    # ready to play
+    echo docker.insops.net/ahuff/c4bot:latest | nc connectfour.inseng.net 3000
+    function
 
-# randobot
-# strat
-#     win
-#     block
+randobot
+strat
+    win
+    block
 
 print "hello world"
