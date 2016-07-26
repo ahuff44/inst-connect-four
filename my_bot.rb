@@ -7,10 +7,11 @@ $stdout.sync = true
 loop do
   game_state = JSON.parse(gets)
   board = game_state["board"]
+  me = game_state["current_player"]
 
   if game_state["winner"]
     break
   end
 
-  puts get_move(board)
+  puts get_move(board, me)
 end
