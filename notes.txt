@@ -1,7 +1,0 @@
-todo:
-    rip out ` ### 3. Don't play a move that lets him win ` into a more general game tree walker
-    https://zachpendleton.github.io/c4-docs/
-    http://connectfour.inseng.net/
-
-    releases (git branches)
-        betterdoubles > fastdoubles > doubles > threes (blocking and creating) > submitted > stable1 > randobot
