@@ -22,32 +22,58 @@ def get_move(board, me)
   end
 
   ### 1.3 Don't play a move that lets him win
-  choices.select! do |cc|
+  choices.reject! do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
     if board_12.nil?
       next # simulation failed
     end
-    winner(board_12) != him
+    winner(board_12) == him
   end
+
+  ### 2.1 Create doubles
+  choices.each do |cc|
+    board_1 = simulate_move(board, cc, me)
+    board_11 = simulate_move(board_1, cc, me)
+    board_111 = simulate_move(board_11, cc, me)
+    if (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
+      return cc
+    end
+  end
+
+  ### 2.2 Avoid allowing blocking
+  choices.reject! do |cc|
+    board_1 = simulate_move(board, cc, me)
+    board_11 = simulate_move(board_1, cc, me)
+    board_111 = simulate_move(board_11, cc, me)
+    x = winner(board_11) == me and winner(board_111) != me # leave in the tension - he can't go there
+    # TODO: what if this is the only move? should play it anyway
+    x
+  end
+
+
+
+  ### 10: non-forcing moves
+
+
 
   choices.shuffle!
 
-  ### 2.1 Block 3-in-a-row...
+  ### 10.1 Block 3-in-a-row...
   choices.each do |cc|
     if contiguous_counts(simulate_move(board, cc, him))[him][3] > contiguous_counts(board)[him][3]
       return cc
     end
   end
 
-  ### 2.2 ... and create 3-in-a-row
+  ### 10.2 ... and create 3-in-a-row
   choices.each do |cc|
     if contiguous_counts(simulate_move(board, cc, me))[me][3] > contiguous_counts(board)[me][3]
       return cc
     end
   end
 
-  ### 3.1 else, choose from least full columns...
+  ### 11.1 else, choose from least full columns...
   groups = choices.group_by do |cc|
     col = (board.transpose)[cc]
     col.count(0)
@@ -55,7 +81,7 @@ def get_move(board, me)
 
   choices = groups[groups.keys.max]
 
-  ### 3.2 ...and play randomly
+  ### 11.2 ...and play randomly
   choices.sample
 end
 
@@ -104,15 +130,17 @@ def simulate_move(board, cc, player)
   col = (new_board.transpose)[cc]
   index = col.find_index { |e| e != 0 }
   if index == 0
-    nil
-  elsif index.nil? # column empty
-    index = col.length - 1
+    new_board # return the same board
   else
-    index = index - 1
-  end
+    if index.nil? # column empty
+      index = col.length - 1
+    else
+      index = index - 1
+    end
 
-  new_board[index][cc] = player
-  new_board
+    new_board[index][cc] = player
+    new_board
+  end
 end
 
 def valid_moves(board)
