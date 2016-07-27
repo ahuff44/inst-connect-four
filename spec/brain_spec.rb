@@ -72,13 +72,10 @@ describe "brain" do
 
     good, nice, meh, semibad, bad = get_move_helper($b5, 1)
     expect(bad).to contain_exactly(2)
-    byebug
+
     good, nice, meh, semibad, bad = get_move_helper($b5, 2)
     expect(nice).to contain_exactly()
     expect(semibad).to contain_exactly(2)
-
-    expect(get_move($b5, 1)).to be 0
-    expect(get_move($b5, 2)).to be 0
 
     # ahuff_assert("$b6 1", get_move($b6, 1), 4)
     # ahuff_assert("$b6 2", get_move($b6, 2), 4)
@@ -123,6 +120,14 @@ describe "brain" do
       expect(get_move(board, 2)).to be 2
     end
 
+    it "finds all wins" do
+      board = [[0, 1, 1, 1, 0]]
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to contain_exactly(0, 4)
+      good, nice, meh, semibad, bad = get_move_helper(board, 2)
+      expect(good).to contain_exactly(0, 4)
+    end
+
     it "doesn't create an easy win for the opponent" do
       board = [
         [0, 0, 2, 0],
@@ -131,6 +136,9 @@ describe "brain" do
         [1, 1, 2, 2],
       ]
       expect(get_move(board, 2)).to_not be 3
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 2)
+      expect(bad).to contain_exactly(3)
     end
 
     it "creates doubles" do
@@ -144,7 +152,7 @@ describe "brain" do
       expect(get_move(board, 1)).to be 4
 
       good, nice, meh, semibad, bad = get_move_helper(board, 1)
-      expect(good).to contain_exactly(4)
+      expect(nice).to contain_exactly(4)
     end
 
     it "doesn't allow getting blocked" do
@@ -161,6 +169,7 @@ describe "brain" do
 
       good, nice, meh, semibad, bad = get_move_helper(board, 1)
       expect(good).to be_empty
+      expect(nice).to be_empty
       expect(meh).to contain_exactly(2)
       expect(semibad).to contain_exactly(1)
     end
@@ -177,8 +186,10 @@ describe "brain" do
       ]
       expect(get_move(board, 1)).to be 1
 
+      # byebug
       good, nice, meh, semibad, bad = get_move_helper(board, 1)
       expect(good).to be_empty
+      expect(nice).to be_empty
       expect(meh).to be_empty
       expect(semibad).to contain_exactly(1)
     end

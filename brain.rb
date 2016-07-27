@@ -1,10 +1,10 @@
 # Public
-def get_move(board, me)
-  good, nice, meh, semibad, bad = get_move_helper(board, me) # TODO: depth
+def get_move(board, me, depth=1)
+  good, nice, meh, semibad, bad = get_move_helper(board, me, depth)
   [good, nice, meh, semibad, bad].reject{ |moves| moves.empty? }.first.sample
 end
 
-def get_move_helper(board, me) # TODO: depth
+def get_move_helper(board, me, depth=1)
   him = (me == 1) ? 2 : 1
 
   meh = valid_moves(board)
@@ -33,50 +33,35 @@ def get_move_helper(board, me) # TODO: depth
   end
 
   ### 2.1 Create doubles
-  # if depth > 0
-  nice, meh = meh.clone.partition do |cc|
-    # begin
-    board_1 = simulate_move(board, cc, me)
-    # TODO: replace rest of this with get_move(board_1, 1).good.length >= 2
-    board_11 = simulate_move(board_1, cc, me)
-    if board_11.nil?
-      false # simulation failed
-    else
-      board_111 = simulate_move(board_11, cc, me)
-      if board_111.nil?
-        false # simulation failed
-      else
-        # byebug
-        (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
-      end
+  if depth > 0
+    nice, meh = meh.clone.partition do |cc|
+      # begin
+      board_1 = simulate_move(board, cc, me)
+      _good, _nice, _meh, _semibad, _bad = get_move_helper(board_1, me, 0)
+      _good.length >= 2 # if I was allowed to go again, are there two ways to win?
+
+      # rescue NoMethodError => e
+      # end
     end
-    # rescue NoMethodError => e
-    # end
+    if !nice.empty?
+      return [[], nice, [], [], []]
+    end
   end
-  if !nice.empty?
-    return [[], nice, [], [], []]
-  end
-  # end
 
   ### 2.2 Avoid allowing blocking
-  # if depth > 0
-  semibad, meh = meh.clone.partition do |cc|
-    board_2 = simulate_move(board, cc, him)
-    board_21 = simulate_move(board_2, cc, me)
-    if board_21.nil?
-      false # simulation failed
-    else
-      # TODO: get_move instead of cc here
-      board_211 = simulate_move(board_21, cc, me)
-      if board_211.nil?
+  semibad = []
+  if depth > 0
+    semibad, meh = meh.clone.partition do |cc|
+      board_2 = simulate_move(board, cc, him)
+      board_21 = simulate_move(board_2, cc, me)
+      if board_21.nil?
         false # simulation failed
       else
-        # leave in the tension - he can't go there but it doesn't instawin for me either
-        (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] == contiguous_counts(board_21)[me][4])
+        winner(board_21) == me
+        # leave in the tension - he can't go there (b/c when I play on top of him there I get 4-in-a-row)
       end
     end
   end
-  # end
 
   return [[], [], meh, semibad, bad]
 
