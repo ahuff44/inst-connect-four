@@ -25,17 +25,18 @@ def get_move(board, me)
   choices.reject! do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
-    if board_12.nil?
-      next # simulation failed
-    end
+    if board_12.nil? then next; end # simulation failed
     winner(board_12) == him
   end
 
   ### 2.1 Create doubles
   choices.each do |cc|
     board_1 = simulate_move(board, cc, me)
+    if board_1.nil? then next; end # simulation failed
     board_11 = simulate_move(board_1, cc, me)
+    if board_11.nil? then next; end # simulation failed
     board_111 = simulate_move(board_11, cc, me)
+    if board_111.nil? then next; end # simulation failed
     if (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
       return cc
     end
@@ -44,8 +45,11 @@ def get_move(board, me)
   ### 2.2 Avoid allowing blocking
   new_choices = choices.reject do |cc|
     board_2 = simulate_move(board, cc, him)
+    if board_2.nil? then next; end # simulation failed
     board_21 = simulate_move(board_2, cc, me)
+    if board_21.nil? then next; end # simulation failed
     board_211 = simulate_move(board_21, cc, me)
+    if board_211.nil? then next; end # simulation failed
     (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] == contiguous_counts(board_21)[me][4])
     # leave in the tension - he can't go there but it doesn't instawin for me either
   end
@@ -61,15 +65,16 @@ def get_move(board, me)
   choices.shuffle!
 
   ### 10.1 Block 3-in-a-row...
+  current_counts = contiguous_counts(board)
   choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, him))[him][3] > contiguous_counts(board)[him][3]
+    if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
       return cc
     end
   end
 
   ### 10.2 ... and create 3-in-a-row
   choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, me))[me][3] > contiguous_counts(board)[me][3]
+    if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
       return cc
     end
   end
@@ -131,7 +136,7 @@ def simulate_move(board, cc, player)
   col = (new_board.transpose)[cc]
   index = col.find_index { |e| e != 0 }
   if index == 0
-    new_board # return the same board
+    nil
   else
     if index.nil? # column empty
       index = col.length - 1
