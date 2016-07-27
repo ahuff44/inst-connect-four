@@ -7,21 +7,21 @@ def get_move(board, me)
   width = board[0].length
   choices = valid_moves(board)
 
-  ### 1. Win
+  ### 1.1 Win
   choices.each do |cc|
     if winner(simulate_move(board, cc, me)) == me
       return cc
     end
   end
 
-  ### 2. Block
+  ### 1.2 Block
   choices.each do |cc|
     if winner(simulate_move(board, cc, him)) == him
       return cc
     end
   end
 
-  ### 3. Don't play a move that lets him win
+  ### 1.3 Don't play a move that lets him win
   choices.select! do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
@@ -31,21 +31,23 @@ def get_move(board, me)
     winner(board_12) != him
   end
 
-  ### 4. Block 3-in-a-row...
+  choices.shuffle!
+
+  ### 2.1 Block 3-in-a-row...
   choices.each do |cc|
     if contiguous_counts(simulate_move(board, cc, him))[him][3] > contiguous_counts(board)[him][3]
       return cc
     end
   end
 
-  ### 5. ... and create 3-in-a-row
+  ### 2.2 ... and create 3-in-a-row
   choices.each do |cc|
     if contiguous_counts(simulate_move(board, cc, me))[me][3] > contiguous_counts(board)[me][3]
       return cc
     end
   end
 
-  ### 5. else, choose from least full columns...
+  ### 3.1 else, choose from least full columns...
   groups = choices.group_by do |cc|
     col = (board.transpose)[cc]
     col.count(0)
@@ -53,7 +55,7 @@ def get_move(board, me)
 
   choices = groups[groups.keys.max]
 
-  ### 6. ...and play randomly
+  ### 3.2 ...and play randomly
   choices.sample
 end
 
