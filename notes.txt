@@ -4,4 +4,4 @@ todo:
     http://connectfour.inseng.net/
 
     releases (git branches)
-        betterdoubles > fastdoubles > doubles > threes (blocking and creatngi) > submitted > stable1 > randobot
+        betterdoubles > fastdoubles > doubles > threes (blocking and creating) > submitted > stable1 > randobot

@@ -141,9 +141,9 @@ describe "brain" do
       expect(bad).to contain_exactly(3)
     end
 
-    it "creates doubles" do
+    it "creates doubles (type 2)" do
       board = [
-        [0, 0, 2, 0, 0],
+        [0, 2, 2, 2, 0],
         [0, 1, 1, 1, 0],
         [0, 1, 1, 1, 0],
         [0, 2, 1, 2, 0],
@@ -153,6 +153,25 @@ describe "brain" do
 
       good, nice, meh, semibad, bad = get_move_helper(board, 1)
       expect(nice).to contain_exactly(4)
+    end
+
+    it "plays/blocks doubles (type 1)" do
+      board = [
+        [0, 0, 0, 0, 0],
+        [0, 1, 1, 0, 0],
+        [0, 2, 2, 1, 2],
+        [0, 2, 2, 1, 2],
+      ]
+      expect(get_move(board, 1)).to be 3
+      expect(get_move(board, 2)).to be 3
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to contain_exactly()
+      expect(nice).to contain_exactly(3)
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 2)
+      expect(good).to contain_exactly()
+      expect(nice).to contain_exactly(3)
     end
 
     it "doesn't allow getting blocked" do

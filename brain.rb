@@ -33,17 +33,47 @@ def get_move_helper(board, me)
     end
   end
 
-  ### 2.1 Create doubles
+  ### 2.1.1 Create doubles (type 1)
   nice, meh = meh.clone.partition do |cc|
     board_1 = simulate_move(board, cc, me)
     wins = get_winning_moves(board_1, me, valid_moves(board_1))
     wins.length >= 2 # if I was allowed to go again, are there two ways to win?
+    # TODO: what about 111\n111? does this catch that?
   end
   if !nice.empty?
     return [[], nice, [], [], []]
   end
 
-  ### 2.2 Avoid allowing blocking
+  ### 2.1.2 Create doubles (type 2)
+  nice, meh = meh.clone.partition do |cc|
+    board_2 = simulate_move(board, cc, him) # let him play so we don't get extra wins from going straight up
+    board_21 = simulate_move(board_2, cc, me)
+    if board_21.nil?
+      false # simulation failed
+    else
+      board_211 = simulate_move(board_21, cc, me)
+      if board_211.nil?
+        false # simulation failed
+      else
+        (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] > contiguous_counts(board_21)[me][4])
+      end
+    end
+  end
+  if !nice.empty?
+    return [[], nice, [], [], []]
+  end
+
+  ### 2.2 Block doubles
+  nice, meh = meh.clone.partition do |cc|
+    board_2 = simulate_move(board, cc, him)
+    wins = get_winning_moves(board_2, him, valid_moves(board_2))
+    wins.length >= 2 # if he was allowed to go again, are there two ways to win?
+  end
+  if !nice.empty?
+    return [[], nice, [], [], []]
+  end
+
+  ### 2.3 Avoid allowing blocking
   semibad, meh = meh.clone.partition do |cc|
     board_2 = simulate_move(board, cc, him)
     board_21 = simulate_move(board_2, cc, me)
@@ -64,27 +94,22 @@ def get_winning_moves(board, me, candidates)
   candidates.select { |cc| winner(simulate_move(board, cc, me)) == me }
 end
 
-def random_choice(board, me, choices)
+def random_choice(board, me, meh)
   him = (me == 1) ? 2 : 1
-
-  choices.shuffle!
 
   ### 1.1 Block 3-in-a-row...
   current_counts = contiguous_counts(board) # speed: cache this. maybe unecessary?
-  choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
-      return cc
-    end
+  good, meh = meh.clone.partition do |cc|
+    contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
   end
 
   ### 1.2 ... and create 3-in-a-row
-  choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
-      return cc
-    end
+  nice, meh = meh.clone.partition do |cc|
+    contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
   end
 
   ### 2.1 else, choose from least full columns...
+  choices = [good, nice, meh].reject{ |moves| moves.empty? }.first
   groups = choices.group_by do |cc|
     col = (board.transpose)[cc]
     col.count(0)
