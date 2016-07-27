@@ -321,4 +321,76 @@ describe "brain" do
     expect(semibad).to contain_exactly()
     expect(bad).to contain_exactly(2, 6)
   end
+
+  it "blocks common doubles" do
+    board = [
+      [0, 0, 1, 1, 0, 0],
+    ]
+    expect([1, 4]).to include(get_move(board, 2))
+    expect([1, 4]).to include(get_move(board, 1)) # sanity
+
+    good, nice, meh, semibad, bad = get_move_helper(board, 2)
+    expect(good).to contain_exactly()
+    expect(nice).to contain_exactly(1, 4)
+
+    board = [
+      [0, 0, 1, 0, 1, 0, 0],
+    ]
+    expect(get_move(board, 2)).to be 3
+    expect(get_move(board, 1)).to be 3 # sanity
+
+    good, nice, meh, semibad, bad = get_move_helper(board, 2)
+    expect(good).to contain_exactly()
+    expect(nice).to contain_exactly(3)
+  end
+
+#   it "wtf threes is lucky as hell" do
+# lol threes just shrekt my bot with
+
+# 0000000000000
+# 0000000000000
+# 0000000000000
+# 0000000000000
+# 0000000000000
+# 0000000x00000
+# 000000x200000
+# 000000y210201
+# 0100001221122
+# 1211211122122
+
+# threes is 2, future moves as y
+# betterdoubles is 1, future moves as x
+#     board = [
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0],
+#       [2, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0],
+#       [1, 0, 2, 0, 0, 0, 0, 1, 2, 1, 1, 2, 0],
+#       [1, 2, 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1],
+#     ]
+
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+# 00000100
+# 00000222
+# 01001221
+# 12212211
+
+# 00000000
+# 00000000
+# 00000000
+# 00000000
+#     byebug
+#     good, nice, meh, semibad, bad = get_move_helper(board, 1)
+#     byebug
+#   end
 end
