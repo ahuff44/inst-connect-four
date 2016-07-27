@@ -1,94 +1,119 @@
 # require 'byebug'
 
+# Public
 def get_move(board, me)
+  good, meh, semibad, bad = get_move_helper(board, me) # TODO: depth
+  [good, meh, semibad, bad].reject{ |moves| moves.empty? }.first.sample
+end
+
+def get_move_helper(board, me) # TODO: depth
   him = (me == 1) ? 2 : 1
 
-  height = board.length
-  width = board[0].length
-  choices = valid_moves(board)
+  meh = valid_moves(board)
 
   ### 1.1 Win
-  choices.each do |cc|
-    if winner(simulate_move(board, cc, me)) == me
-      return cc
-    end
+  good = meh.select { |cc| winner(simulate_move(board, cc, me)) == me }
+  if !good.empty?
+    return [good, [], [], []]
   end
 
   ### 1.2 Block
-  choices.each do |cc|
-    if winner(simulate_move(board, cc, him)) == him
-      return cc
-    end
+  good = meh.select { |cc| winner(simulate_move(board, cc, him)) == him }
+  if !good.empty?
+    return [good, [], [], []]
   end
 
   ### 1.3 Don't play a move that lets him win
-  choices.reject! do |cc|
+  bad, meh = meh.clone.partition do |cc|
     board_1 = simulate_move(board, cc, me)
     board_12 = simulate_move(board_1, cc, him)
-    if board_12.nil? then next; end # simulation failed
-    winner(board_12) == him
+    if board_12.nil?
+      false # add to meh list
+    else
+      winner(board_12) == him
+    end
   end
 
   ### 2.1 Create doubles
-  choices.each do |cc|
+  # if depth > 0
+  good, meh = meh.clone.partition do |cc|
+    # begin
     board_1 = simulate_move(board, cc, me)
-    if board_1.nil? then next; end # simulation failed
+    # TODO: replace rest of this with get_move(board_1, 1).good.length >= 2
     board_11 = simulate_move(board_1, cc, me)
-    if board_11.nil? then next; end # simulation failed
-    board_111 = simulate_move(board_11, cc, me)
-    if board_111.nil? then next; end # simulation failed
-    if (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
-      return cc
+    if board_11.nil?
+      false # simulation failed
+    else
+      board_111 = simulate_move(board_11, cc, me)
+      if board_111.nil?
+        false # simulation failed
+      else
+        (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
+      end
     end
+    # rescue NoMethodError => e
+    # end
   end
+  if !good.empty?
+    return [good, [], [], []]
+  end
+  # end
 
   ### 2.2 Avoid allowing blocking
-  new_choices = choices.reject do |cc|
+  # if depth > 0
+  semibad, meh = meh.clone.partition do |cc|
     board_2 = simulate_move(board, cc, him)
-    if board_2.nil? then next; end # simulation failed
     board_21 = simulate_move(board_2, cc, me)
-    if board_21.nil? then next; end # simulation failed
-    board_211 = simulate_move(board_21, cc, me)
-    if board_211.nil? then next; end # simulation failed
-    (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] == contiguous_counts(board_21)[me][4])
-    # leave in the tension - he can't go there but it doesn't instawin for me either
-  end
-  unless new_choices.empty? # but allow self to be blocked if it's literally the only option
-    choices = new_choices
-  end
-
-
-  ### 10: non-forcing moves
-
-
-
-  choices.shuffle!
-
-  ### 10.1 Block 3-in-a-row...
-  current_counts = contiguous_counts(board)
-  choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
-      return cc
+    if board_21.nil?
+      false # simulation failed
+    else
+      # TODO: get_move instead of cc here
+      board_211 = simulate_move(board_21, cc, me)
+      if board_211.nil?
+        false # simulation failed
+      else
+        # leave in the tension - he can't go there but it doesn't instawin for me either
+        (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] == contiguous_counts(board_21)[me][4])
+      end
     end
   end
+  # end
 
-  ### 10.2 ... and create 3-in-a-row
-  choices.each do |cc|
-    if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
-      return cc
-    end
-  end
+  return [[], meh, semibad, bad]
 
-  ### 11.1 else, choose from least full columns...
-  groups = choices.group_by do |cc|
-    col = (board.transpose)[cc]
-    col.count(0)
-  end
 
-  choices = groups[groups.keys.max]
 
-  ### 11.2 ...and play randomly
-  choices.sample
+  # ### 10: non-forcing moves
+
+
+
+  # choices.shuffle!
+
+  # ### 10.1 Block 3-in-a-row...
+  # current_counts = contiguous_counts(board)
+  # choices.each do |cc|
+  #   if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
+  #     return cc
+  #   end
+  # end
+
+  # ### 10.2 ... and create 3-in-a-row
+  # choices.each do |cc|
+  #   if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
+  #     return cc
+  #   end
+  # end
+
+  # ### 11.1 else, choose from least full columns...
+  # groups = choices.group_by do |cc|
+  #   col = (board.transpose)[cc]
+  #   col.count(0)
+  # end
+
+  # choices = groups[groups.keys.max]
+
+  # ### 11.2 ...and play randomly
+  # choices.sample
 end
 
 def winner(board)
