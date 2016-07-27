@@ -1,7 +1,8 @@
 # Public
 def get_move(board, me, depth=1)
   good, nice, meh, semibad, bad = get_move_helper(board, me, depth)
-  [good, nice, meh, semibad, bad].reject{ |moves| moves.empty? }.first.sample
+  choices = [good, nice, meh, semibad, bad].reject{ |moves| moves.empty? }.first
+  random_choice(board, me, choices)
 end
 
 def get_move_helper(board, me, depth=1)
@@ -64,40 +65,38 @@ def get_move_helper(board, me, depth=1)
   end
 
   return [[], [], meh, semibad, bad]
+end
 
+def random_choice(board, me, choices)
+  him = (me == 1) ? 2 : 1
 
+  choices.shuffle!
 
-  # ### 10: non-forcing moves
+  ### 1.1 Block 3-in-a-row...
+  current_counts = contiguous_counts(board) # speed: cache this. maybe unecessary?
+  choices.each do |cc|
+    if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
+      return cc
+    end
+  end
 
+  ### 1.2 ... and create 3-in-a-row
+  choices.each do |cc|
+    if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
+      return cc
+    end
+  end
 
+  ### 2.1 else, choose from least full columns...
+  groups = choices.group_by do |cc|
+    col = (board.transpose)[cc]
+    col.count(0)
+  end
 
-  # choices.shuffle!
+  choices = groups[groups.keys.max]
 
-  # ### 10.1 Block 3-in-a-row...
-  # current_counts = contiguous_counts(board)
-  # choices.each do |cc|
-  #   if contiguous_counts(simulate_move(board, cc, him))[him][3] > current_counts[him][3]
-  #     return cc
-  #   end
-  # end
-
-  # ### 10.2 ... and create 3-in-a-row
-  # choices.each do |cc|
-  #   if contiguous_counts(simulate_move(board, cc, me))[me][3] > current_counts[me][3]
-  #     return cc
-  #   end
-  # end
-
-  # ### 11.1 else, choose from least full columns...
-  # groups = choices.group_by do |cc|
-  #   col = (board.transpose)[cc]
-  #   col.count(0)
-  # end
-
-  # choices = groups[groups.keys.max]
-
-  # ### 11.2 ...and play randomly
-  # choices.sample
+  ### 2.2 ...and play randomly
+  return choices.sample
 end
 
 def winner(board)

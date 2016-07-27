@@ -186,14 +186,15 @@ describe "brain" do
       ]
       expect(get_move(board, 1)).to be 1
 
-      # byebug
       good, nice, meh, semibad, bad = get_move_helper(board, 1)
       expect(good).to be_empty
       expect(nice).to be_empty
       expect(meh).to be_empty
       expect(semibad).to contain_exactly(1)
     end
+  end
 
+  context "when playing randomly" do
     it "blocks 3-in-a-row" do
       board = [
         [0, 0, 0, 0],
@@ -216,6 +217,20 @@ describe "brain" do
         [1, 2, 1, 0],
       ]
       expect(get_move(board, 2)).to be 2
+    end
+
+    it "wins with style" do
+      board = [
+        [2, 2, 0, 0, 0],
+        [2, 1, 1, 0, 1],
+        [1, 2, 1, 0, 1],
+        [2, 1, 1, 0, 1],
+      ]
+      # plays to block a 3-in-a-row
+      10.times { expect(get_move(board, 1)).to be 2 }
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to contain_exactly(2, 3, 4)
     end
 
     it "creates 3-in-a-row" do
@@ -277,6 +292,14 @@ describe "brain" do
       [0, 0, 0, 2, 2, 2, 1],
       [0, 2, 0, 2, 1, 1, 1],
     ]
-    expect(get_move(board, 1)).to be 0 # 2 would block a 3-in-a-row but would let him win, so choose 0 since it's lowest
+    # 2 would block a 3-in-a-row but would let him win, so choose 0 since it's lowest
+    expect(get_move(board, 1)).to be 0
+
+    good, nice, meh, semibad, bad = get_move_helper(board, 1)
+    expect(good).to contain_exactly()
+    expect(nice).to contain_exactly()
+    expect(meh).to contain_exactly(0, 1, 3, 4, 5)
+    expect(semibad).to contain_exactly()
+    expect(bad).to contain_exactly(2, 6)
   end
 end
