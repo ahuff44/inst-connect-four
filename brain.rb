@@ -1,9 +1,7 @@
-# require 'byebug'
-
 # Public
 def get_move(board, me)
-  good, meh, semibad, bad = get_move_helper(board, me) # TODO: depth
-  [good, meh, semibad, bad].reject{ |moves| moves.empty? }.first.sample
+  good, nice, meh, semibad, bad = get_move_helper(board, me) # TODO: depth
+  [good, nice, meh, semibad, bad].reject{ |moves| moves.empty? }.first.sample
 end
 
 def get_move_helper(board, me) # TODO: depth
@@ -14,13 +12,13 @@ def get_move_helper(board, me) # TODO: depth
   ### 1.1 Win
   good = meh.select { |cc| winner(simulate_move(board, cc, me)) == me }
   if !good.empty?
-    return [good, [], [], []]
+    return [good, [], [], [], []]
   end
 
   ### 1.2 Block
   good = meh.select { |cc| winner(simulate_move(board, cc, him)) == him }
   if !good.empty?
-    return [good, [], [], []]
+    return [good, [], [], [], []]
   end
 
   ### 1.3 Don't play a move that lets him win
@@ -36,7 +34,7 @@ def get_move_helper(board, me) # TODO: depth
 
   ### 2.1 Create doubles
   # if depth > 0
-  good, meh = meh.clone.partition do |cc|
+  nice, meh = meh.clone.partition do |cc|
     # begin
     board_1 = simulate_move(board, cc, me)
     # TODO: replace rest of this with get_move(board_1, 1).good.length >= 2
@@ -48,14 +46,15 @@ def get_move_helper(board, me) # TODO: depth
       if board_111.nil?
         false # simulation failed
       else
+        # byebug
         (contiguous_counts(board_11)[me][4] > 0 and contiguous_counts(board_111)[me][4] > contiguous_counts(board_11)[me][4])
       end
     end
     # rescue NoMethodError => e
     # end
   end
-  if !good.empty?
-    return [good, [], [], []]
+  if !nice.empty?
+    return [[], nice, [], [], []]
   end
   # end
 
@@ -79,7 +78,7 @@ def get_move_helper(board, me) # TODO: depth
   end
   # end
 
-  return [[], meh, semibad, bad]
+  return [[], [], meh, semibad, bad]
 
 
 

@@ -59,13 +59,24 @@ describe "brain" do
     expect([0,1,2,3,4,5]).to include(get_move($b0, 1))
     expect([0,1,2,3,4,5]).to include(get_move($b0, 2))
 
-    expect(get_move($b1, 1)).to_not be 4
+    good, nice, meh, semibad, bad = get_move_helper($b1, 1)
+    expect(semibad).to contain_exactly(4)
+    good, nice, meh, semibad, bad = get_move_helper($b1, 2)
+    expect(bad).to contain_exactly(4)
 
-    expect(get_move($b1, 2)).to be 1
     expect(get_move($b2, 1)).to be 0
     expect(get_move($b2, 2)).to be 2
+
     expect(get_move($b4, 1)).to be 3
     expect(get_move($b4, 2)).to be 3
+
+    good, nice, meh, semibad, bad = get_move_helper($b5, 1)
+    expect(bad).to contain_exactly(2)
+    byebug
+    good, nice, meh, semibad, bad = get_move_helper($b5, 2)
+    expect(nice).to contain_exactly()
+    expect(semibad).to contain_exactly(2)
+
     expect(get_move($b5, 1)).to be 0
     expect(get_move($b5, 2)).to be 0
 
@@ -131,6 +142,9 @@ describe "brain" do
         [0, 2, 2, 1, 2],
       ]
       expect(get_move(board, 1)).to be 4
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to contain_exactly(4)
     end
 
     it "doesn't allow getting blocked" do
@@ -144,6 +158,11 @@ describe "brain" do
         [2, 0, 1, 2],
       ]
       expect(get_move(board, 1)).to be 2
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to be_empty
+      expect(meh).to contain_exactly(2)
+      expect(semibad).to contain_exactly(1)
     end
 
     it "admits blocking if that's the only option" do
@@ -157,6 +176,11 @@ describe "brain" do
         [2, 0, 1, 2],
       ]
       expect(get_move(board, 1)).to be 1
+
+      good, nice, meh, semibad, bad = get_move_helper(board, 1)
+      expect(good).to be_empty
+      expect(meh).to be_empty
+      expect(semibad).to contain_exactly(1)
     end
 
     it "blocks 3-in-a-row" do
