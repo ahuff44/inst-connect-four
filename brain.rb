@@ -42,15 +42,16 @@ def get_move(board, me)
   end
 
   ### 2.2 Avoid allowing blocking
-  choices.reject! do |cc|
-    board_1 = simulate_move(board, cc, me)
-    board_11 = simulate_move(board_1, cc, me)
-    board_111 = simulate_move(board_11, cc, me)
-    x = winner(board_11) == me and winner(board_111) != me # leave in the tension - he can't go there
-    # TODO: what if this is the only move? should play it anyway
-    x
+  new_choices = choices.reject do |cc|
+    board_2 = simulate_move(board, cc, him)
+    board_21 = simulate_move(board_2, cc, me)
+    board_211 = simulate_move(board_21, cc, me)
+    (contiguous_counts(board_21)[me][4] > 0 and contiguous_counts(board_211)[me][4] == contiguous_counts(board_21)[me][4])
+    # leave in the tension - he can't go there but it doesn't instawin for me either
   end
-
+  unless new_choices.empty? # but allow self to be blocked if it's literally the only option
+    choices = new_choices
+  end
 
 
   ### 10: non-forcing moves

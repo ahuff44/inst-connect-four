@@ -4,8 +4,4 @@ todo:
     http://connectfour.inseng.net/
 
     releases (git branches)
-        threes > submitted > stable1 > randobot
-
-threes: xxooox|xxo 5.5/10
-        x
-(o=latest, where it blocks threes but doesn't make them)
+        doubles > threes (block > create) > submitted > stable1 > randobot

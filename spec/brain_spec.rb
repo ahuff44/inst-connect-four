@@ -1,3 +1,5 @@
+require 'byebug'
+
 require File.expand_path(File.dirname(__FILE__) + '/../brain.rb')
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper.rb')
 
@@ -54,34 +56,25 @@ describe "brain" do
       [1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2],
     ]
 
-    def ahuff_assert(tag, a, b)
-      if a != b
-        raise tag
-      end
-    end
+    expect([0,1,2,3,4,5]).to include(get_move($b0, 1))
+    expect([0,1,2,3,4,5]).to include(get_move($b0, 2))
 
-    puts "Running tests"
-    ahuff_assert("$b0 1", [0,1,2,3,4,5].include?(get_move($b0, 1)), true)
-    ahuff_assert("$b0 1", [0,1,2,3,4,5].include?(get_move($b0, 2)), true)
+    expect(get_move($b1, 1)).to_not be 4
 
-    ahuff_assert("$b1 1", get_move($b1, 1) != 4, true)
-    ahuff_assert("$b1 2", get_move($b1, 2), 1)
-
-    ahuff_assert("$b2 1", get_move($b2, 1), 0)
-    ahuff_assert("$b2 2", get_move($b2, 2), 2)
-
-    ahuff_assert("$b4 1", get_move($b4, 1), 3)
-    ahuff_assert("$b4 2", get_move($b4, 2), 3)
-
-    ahuff_assert("$b5 1", get_move($b5, 1), 0)
-    ahuff_assert("$b5 2", get_move($b5, 2), 0)
+    expect(get_move($b1, 2)).to be 1
+    expect(get_move($b2, 1)).to be 0
+    expect(get_move($b2, 2)).to be 2
+    expect(get_move($b4, 1)).to be 3
+    expect(get_move($b4, 2)).to be 3
+    expect(get_move($b5, 1)).to be 0
+    expect(get_move($b5, 2)).to be 0
 
     # ahuff_assert("$b6 1", get_move($b6, 1), 4)
     # ahuff_assert("$b6 2", get_move($b6, 2), 4)
   end
 
   describe "basic logic" do
-    it "wins" do
+    it "wins and blocks" do
       board = [
         [0, 0, 0, 0],
         [0, 0, 0, 0],
@@ -89,6 +82,7 @@ describe "brain" do
         [1, 1, 1, 0],
       ]
       expect(get_move(board, 1)).to be 3
+      expect(get_move(board, 2)).to be 3
       board = [
         [0, 0, 0, 0],
         [1, 0, 0, 0],
@@ -96,6 +90,7 @@ describe "brain" do
         [1, 0, 0, 0],
       ]
       expect(get_move(board, 1)).to be 0
+      expect(get_move(board, 2)).to be 0
       board = [
         [0, 0, 0, 0],
         [0, 0, 1, 2],
@@ -103,6 +98,7 @@ describe "brain" do
         [1, 2, 2, 2],
       ]
       expect(get_move(board, 1)).to be 3
+      expect(get_move(board, 2)).to be 3
     end
 
     it "wins before blocking" do
@@ -114,30 +110,6 @@ describe "brain" do
       ]
       expect(get_move(board, 1)).to be 0
       expect(get_move(board, 2)).to be 2
-    end
-
-    it "blocks" do
-      board = [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [1, 1, 1, 0],
-      ]
-      expect(get_move(board, 2)).to be 3
-      board = [
-        [0, 0, 0, 0],
-        [1, 0, 0, 0],
-        [1, 0, 0, 0],
-        [1, 0, 0, 0],
-      ]
-      expect(get_move(board, 2)).to be 0
-      board = [
-        [0, 0, 0, 0],
-        [0, 0, 1, 2],
-        [0, 1, 2, 1],
-        [1, 2, 2, 2],
-      ]
-      expect(get_move(board, 2)).to be 3
     end
 
     it "doesn't create an easy win for the opponent" do
@@ -156,7 +128,7 @@ describe "brain" do
         [0, 1, 1, 1, 0],
         [0, 1, 1, 1, 0],
         [0, 2, 1, 2, 0],
-        [0, 1, 2, 1, 2],
+        [0, 2, 2, 1, 2],
       ]
       expect(get_move(board, 1)).to be 4
     end
@@ -174,8 +146,7 @@ describe "brain" do
       expect(get_move(board, 1)).to be 2
     end
 
-    it "refuses to play if the only play blocks itself" do
-      # TODO: this is BAD; 1 should win this game in 3 moves but he quits instead :(
+    it "admits blocking if that's the only option" do
       board = [
         [1, 0, 1, 1],
         [1, 0, 1, 1],
@@ -185,7 +156,7 @@ describe "brain" do
         [1, 0, 1, 1],
         [2, 0, 1, 2],
       ]
-      expect{ get_move(board, 1) }.to raise_error(NoMethodError) # tries to do nil.sample
+      expect(get_move(board, 1)).to be 1
     end
 
     it "blocks 3-in-a-row" do
@@ -212,29 +183,29 @@ describe "brain" do
       expect(get_move(board, 2)).to be 2
     end
 
-    # it "creates 3-in-a-row" do
-    #   board = [
-    #     [0, 0, 0, 0],
-    #     [0, 0, 0, 0],
-    #     [0, 1, 0, 0],
-    #     [0, 1, 0, 0],
-    #   ]
-    #   expect(get_move(board, 1)).to be 1
-    #   board = [
-    #     [0, 0, 0, 0],
-    #     [0, 0, 0, 0],
-    #     [0, 0, 0, 0],
-    #     [1, 1, 0, 0],
-    #   ]
-    #   expect(get_move(board, 1)).to be 2
-    #   board = [
-    #     [0, 0, 0, 0],
-    #     [0, 0, 0, 0],
-    #     [0, 1, 2, 0],
-    #     [1, 2, 1, 0],
-    #   ]
-    #   expect(get_move(board, 1)).to be 2
-    # end
+    it "creates 3-in-a-row" do
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 1
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 0, 0],
+      ]
+      expect(get_move(board, 1)).to be 2
+      board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 1, 2, 0],
+        [1, 2, 1, 0],
+      ]
+      expect(get_move(board, 1)).to be 2
+    end
 
     it "blocks 3 before creating 3" do
       board = [
